@@ -4,526 +4,844 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ML Exam Study App – AIMLZG565</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
-  header { background: #1a1a2e; color: white; padding: 1.25rem 2rem; display: flex; align-items: center; gap: 1rem; }
-  header h1 { font-size: 18px; font-weight: 600; }
-  header p { font-size: 13px; opacity: 0.6; margin-top: 2px; }
-  .badge { background: #16213e; border: 1px solid #0f3460; color: #e94560; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-  .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; background: white; padding: 8px; border-radius: 12px; border: 1px solid #e0e0d8; }
-  .tab { padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: #666; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
-  .tab.active { background: #1a1a2e; color: white; }
-  .tab:hover:not(.active) { background: #f0f0e8; }
-  .section { display: none; }
-  .section.active { display: block; }
+:root {
+  --purple:     #6C4EF0;
+  --purple-d:   #5438d0;
+  --purple-l:   #EEF2FF;
+  --purple-m:   #c4b8fc;
+  --orange:     #FF6636;
+  --orange-l:   #FFF0EB;
+  --navy:       #170F49;
+  --navy-2:     #2B2356;
+  --teal:       #0D9488;
+  --teal-l:     #CCFBF1;
+  --green:      #16A34A;
+  --green-l:    #DCFCE7;
+  --amber:      #D97706;
+  --amber-l:    #FEF3C7;
+  --red:        #DC2626;
+  --red-l:      #FEE2E2;
+  --bg:         #F8F8FF;
+  --surface:    #FFFFFF;
+  --card:       #FFFFFF;
+  --border:     #E8E4FF;
+  --border2:    #C4B8FC;
+  --text1:      #170F49;
+  --text2:      #4A4580;
+  --text3:      #8B85B8;
+  --header-h:   70px;
+  --header-sm:  48px;
+  --nav-h:      54px;
+}
 
-  /* Formula sheet */
-  .formula-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-  .formula-card { background: white; border: 1px solid #e0e0d8; border-radius: 12px; padding: 1rem 1.25rem; }
-  .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; display: inline-block; margin-bottom: 10px; letter-spacing: 0.3px; }
-  .tag-blue { background: #dbeafe; color: #1d4ed8; }
-  .tag-teal { background: #d1fae5; color: #065f46; }
-  .tag-amber { background: #fef3c7; color: #92400e; }
-  .tag-coral { background: #fee2e2; color: #991b1b; }
-  .fname { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
-  .feq { font-family: 'Courier New', monospace; font-size: 12.5px; background: #f8f8f4; padding: 8px 12px; border-radius: 6px; color: #1a1a1a; margin-bottom: 8px; line-height: 1.7; white-space: pre-wrap; }
-  .fnote { font-size: 12px; color: #666; line-height: 1.5; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg); color: var(--text1);
+  min-height: 100vh; font-size: 16px;
+}
 
-  /* Flashcards */
-  .fc-wrap { max-width: 600px; margin: 0 auto; }
-  .fc-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-  .fc-counter { font-size: 13px; color: #666; }
-  .fc-score { font-size: 13px; font-weight: 600; color: #065f46; }
-  .progress-bar { height: 5px; background: #e0e0d8; border-radius: 3px; margin-bottom: 1.25rem; overflow: hidden; }
-  .progress-fill { height: 100%; background: #059669; border-radius: 3px; transition: width 0.3s; }
-  .flashcard { background: white; border: 1px solid #e0e0d8; border-radius: 14px; padding: 2rem 1.75rem; min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s; }
-  .flashcard:hover { border-color: #aaa; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-  .card-q { font-size: 16px; font-weight: 500; color: #1a1a1a; line-height: 1.6; }
-  .card-a { font-size: 13.5px; color: #444; line-height: 1.7; margin-top: 1rem; display: none; text-align: left; white-space: pre-wrap; border-top: 1px solid #e0e0d8; padding-top: 1rem; width: 100%; }
-  .card-a.show { display: block; }
-  .card-hint { font-size: 12px; color: #aaa; margin-top: 1rem; }
-  .fc-btns { display: flex; gap: 8px; margin-top: 1rem; justify-content: center; }
-  .btn { padding: 8px 18px; border-radius: 8px; border: 1.5px solid #ddd; background: white; color: #333; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
-  .btn:hover { background: #f5f5f0; }
-  .btn-red { border-color: #f87171; color: #dc2626; }
-  .btn-red:hover { background: #fee2e2; }
-  .btn-green { border-color: #34d399; color: #059669; }
-  .btn-green:hover { background: #d1fae5; }
-  .btn-primary { border-color: #93c5fd; color: #1d4ed8; }
-  .btn-primary:hover { background: #dbeafe; }
+/* ══ HEADER ══ */
+#site-header {
+  position: sticky; top: 0; z-index: 300;
+  background: var(--navy);
+  box-shadow: 0 2px 16px rgba(23,15,73,0.18);
+  transition: box-shadow 0.25s;
+}
+#site-header .hinner {
+  max-width: 1060px; margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: var(--header-h);
+  transition: height 0.25s ease;
+}
+#site-header.collapsed .hinner { height: var(--header-sm); }
 
-  /* Problems */
-  .problem-card { background: white; border: 1px solid #e0e0d8; border-radius: 12px; padding: 1.25rem; margin-bottom: 14px; }
-  .prob-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
-  .prob-num { width: 30px; height: 30px; border-radius: 50%; background: #1a1a2e; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-  .prob-q { font-size: 14px; line-height: 1.6; color: #1a1a1a; }
-  .solution { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0e8; }
-  .solution.show { display: block; }
-  .step { margin-bottom: 10px; }
-  .step-label { font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .step-eq { font-family: 'Courier New', monospace; font-size: 12.5px; background: #f8f8f4; padding: 6px 10px; border-radius: 6px; color: #1a1a1a; line-height: 1.7; white-space: pre-wrap; display: block; }
-  .answer-step .step-label { color: #059669; }
-  .answer-step .step-eq { background: #d1fae5; }
+.hlogo { display: flex; align-items: center; gap: 12px; }
+.hlogo-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: #EEF2FF; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+  transition: width 0.25s, height 0.25s;
+}
+#site-header.collapsed .hlogo-icon { width: 30px; height: 30px; font-size: 14px; }
+.hlogo-text h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px; font-weight: 800; color: #fff; line-height: 1.2;
+}
+.hlogo-text p {
+  font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;
+  transition: opacity 0.2s, max-height 0.2s; max-height: 20px; overflow: hidden;
+}
+#site-header.collapsed .hlogo-text p { opacity: 0; max-height: 0; }
+.hbadge {
+  background: var(--orange); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; margin-left: 6px; vertical-align: middle;
+  letter-spacing: 0.3px;
+}
+.hright { display: flex; align-items: center; gap: 10px; }
+.collapse-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7); width: 34px; height: 34px;
+  border-radius: 8px; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.collapse-btn:hover { background: rgba(255,255,255,0.2); }
 
-  /* Concepts */
-  .concept-card { background: white; border: 1px solid #e0e0d8; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-  .concept-hdr { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-  .concept-hdr:hover { background: #fafaf8; }
-  .concept-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-  .arrow { color: #aaa; font-size: 11px; transition: transform 0.2s; display: inline-block; }
-  .arrow.open { transform: rotate(90deg); }
-  .concept-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid #f0f0e8; }
-  .concept-body.show { display: block; }
-  .concept-body p { font-size: 13.5px; color: #444; line-height: 1.7; margin-top: 0.8rem; }
-  .concept-body ul { margin: 8px 0 0 1.2rem; }
-  .concept-body li { font-size: 13.5px; color: #444; line-height: 1.7; margin-bottom: 3px; }
-  .concept-eq { font-family: 'Courier New', monospace; font-size: 12.5px; background: #f8f8f4; padding: 7px 12px; border-radius: 6px; margin: 8px 0; display: block; color: #1a1a1a; line-height: 1.7; white-space: pre-wrap; }
-  .info-box { background: #dbeafe; border-left: 3px solid #3b82f6; padding: 8px 12px; border-radius: 0 6px 6px 0; margin-top: 10px; font-size: 12.5px; color: #1e40af; line-height: 1.5; }
-  .warn-box { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 8px 12px; border-radius: 0 6px 6px 0; margin-top: 10px; font-size: 12.5px; color: #92400e; line-height: 1.5; }
+/* ══ NAV ══ */
+#site-nav {
+  position: sticky; top: var(--header-h); z-index: 200;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(108,78,240,0.08);
+  transition: top 0.25s ease;
+}
+#site-header.collapsed ~ #site-nav { top: var(--header-sm); }
+.nav-inner {
+  max-width: 1060px; margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex; align-items: center; gap: 4px;
+  height: var(--nav-h);
+  overflow-x: auto; scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0; padding: 8px 18px; border-radius: 8px;
+  border: none; background: transparent;
+  color: var(--text3); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  transition: all 0.15s; white-space: nowrap;
+  display: flex; align-items: center; gap: 7px;
+}
+.tab.active {
+  background: var(--purple-l); color: var(--purple);
+  border-bottom: 2px solid var(--purple);
+  border-radius: 8px 8px 0 0;
+}
+.tab:hover:not(.active) { background: var(--purple-l); color: var(--purple); }
+.tab-icon { font-size: 15px; }
+.tab-label { }
+@media (max-width: 500px) {
+  .tab { padding: 8px 12px; }
+  .tab-label { display: none; }
+}
 
-  .section-title { font-size: 13px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 1rem; }
+/* ══ PAGE ══ */
+.container { max-width: 1060px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+.section { display: none; }
+.section.active { display: block; }
+
+.sec-header { margin-bottom: 1.5rem; }
+.sec-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 4px;
+}
+.sec-sub { font-size: 14px; color: var(--text3); }
+
+/* ══ TAGS ══ */
+.tag {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; display: inline-block; margin-bottom: 10px;
+  letter-spacing: 0.4px; text-transform: uppercase;
+}
+.tag-purple { background: var(--purple-l); color: var(--purple); }
+.tag-teal   { background: var(--teal-l);   color: var(--teal); }
+.tag-amber  { background: var(--amber-l);  color: var(--amber); }
+.tag-coral  { background: var(--red-l);    color: var(--red); }
+.tag-orange { background: var(--orange-l); color: var(--orange); }
+
+/* ══ FORMULA GRID ══ */
+.formula-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+@media (max-width: 720px) { .formula-grid { grid-template-columns: 1fr; } }
+
+.formula-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 1.5rem 1.75rem;
+  cursor: pointer; position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  min-height: 215px;
+}
+.formula-card:hover {
+  border-color: var(--purple-m);
+  box-shadow: 0 6px 24px rgba(108,78,240,0.13);
+  transform: translateY(-2px);
+}
+.flip-hint {
+  position: absolute; top: 12px; right: 14px;
+  font-size: 11px; color: var(--text3); font-style: italic;
+}
+.fname {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 12px; line-height: 1.4;
+}
+.feq {
+  font-family: 'Courier New', monospace; font-size: 14.5px;
+  background: var(--purple-l); padding: 12px 16px; border-radius: 10px;
+  color: var(--navy); margin-bottom: 12px; line-height: 1.9;
+  white-space: pre-wrap; border-left: 3px solid var(--purple);
+}
+.fnote { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+.formula-back { display: none; }
+.formula-card.flipped .formula-front { display: none; }
+.formula-card.flipped .formula-back  { display: block; }
+.formula-back .fname { color: var(--purple); }
+.formula-back li {
+  font-size: 14px; color: var(--text2); line-height: 1.8; margin-bottom: 6px;
+  padding-left: 4px;
+}
+.formula-back ul { margin-top: 10px; padding-left: 1.1rem; }
+.flip-back-note { font-size: 12px; color: var(--text3); margin-top: 12px; font-style: italic; }
+
+/* ══ FLASHCARDS ══ */
+.deck-row { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.deck-btn {
+  padding: 7px 16px; border-radius: 20px;
+  border: 1.5px solid var(--border2); background: var(--card);
+  color: var(--text2); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.15s; white-space: nowrap;
+}
+.deck-btn.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+.deck-btn:hover:not(.active) { background: var(--purple-l); border-color: var(--purple); color: var(--purple); }
+
+.fc-wrap { max-width: 660px; margin: 0 auto; }
+.fc-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.fc-counter { font-size: 14px; color: var(--text2); font-weight: 500; }
+.fc-score   { font-size: 14px; font-weight: 700; color: var(--green); }
+
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 1.5rem; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--purple); border-radius: 3px; transition: width 0.3s; }
+
+.flashcard {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 2.5rem 2rem; min-height: 270px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  box-shadow: 0 2px 12px rgba(108,78,240,0.06);
+}
+.flashcard:hover {
+  border-color: var(--purple-m);
+  box-shadow: 0 8px 28px rgba(108,78,240,0.14);
+  transform: translateY(-2px);
+}
+.card-q {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px; font-weight: 700; color: var(--navy); line-height: 1.65;
+}
+.card-a {
+  font-family: 'Courier New', monospace; font-size: 14.5px;
+  color: var(--navy); line-height: 1.9; margin-top: 1.25rem;
+  display: none; text-align: left; white-space: pre-wrap;
+  background: var(--purple-l); padding: 1rem 1.25rem;
+  border-radius: 10px; width: 100%;
+  border-left: 3px solid var(--purple);
+}
+.card-a.show { display: block; }
+.card-hint { font-size: 13px; color: var(--text3); margin-top: 1rem; }
+
+.fc-btns { display: flex; gap: 10px; margin-top: 1.25rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  padding: 10px 22px; border-radius: 10px;
+  border: 1.5px solid var(--border2); background: var(--card);
+  color: var(--text1); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  transition: all 0.15s;
+}
+.btn:hover { background: var(--purple-l); border-color: var(--purple); color: var(--purple); }
+.btn-primary { background: var(--purple); color: #fff; border-color: var(--purple); }
+.btn-primary:hover { background: var(--purple-d); border-color: var(--purple-d); color: #fff; }
+.btn-red   { border-color: #f0a0a0; color: var(--red); }
+.btn-red:hover   { background: var(--red-l); }
+.btn-green { border-color: #80d0a0; color: var(--green); }
+.btn-green:hover { background: var(--green-l); }
+
+@media (max-width: 500px) {
+  .flashcard { padding: 1.75rem 1.25rem; }
+  .card-q { font-size: 16px; }
+  .card-a { font-size: 13.5px; }
+}
+
+/* ══ PRACTICE PROBLEMS ══ */
+.problem-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 1.5rem 1.75rem; margin-bottom: 16px;
+  transition: box-shadow 0.2s;
+}
+.problem-card:hover { box-shadow: 0 4px 18px rgba(108,78,240,0.09); }
+.prob-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.prob-num {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--navy); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 16px; font-weight: 800; flex-shrink: 0;
+}
+.prob-q { font-size: 15.5px; line-height: 1.7; color: var(--navy); white-space: pre-wrap; }
+
+.solution { display: none; margin-top: 14px; }
+.solution.show { display: block; }
+.step { margin-bottom: 16px; }
+.step-label {
+  font-size: 11.5px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px;
+}
+.step-eq {
+  font-family: 'Courier New', monospace; font-size: 14.5px;
+  background: var(--bg); padding: 14px 18px; border-radius: 10px;
+  color: var(--navy); line-height: 1.9; white-space: pre-wrap;
+  display: block; border-left: 3px solid var(--border2);
+}
+.step.answer-step .step-label { color: var(--green); }
+.step.answer-step .step-eq {
+  background: var(--green-l); border-left-color: var(--green);
+  font-size: 15px; font-weight: 600;
+}
+@media (max-width: 600px) {
+  .problem-card { padding: 1.25rem; }
+  .prob-q { font-size: 14.5px; }
+  .step-eq { font-size: 13.5px; padding: 12px 14px; }
+}
+
+/* ══ CONCEPTS ══ */
+.concept-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 16px; margin-bottom: 12px; overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.concept-card:hover { box-shadow: 0 4px 18px rgba(108,78,240,0.09); }
+.concept-hdr {
+  padding: 1.25rem 1.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; gap: 1rem; transition: background 0.15s;
+}
+.concept-hdr:hover { background: var(--purple-l); }
+.concept-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15.5px; font-weight: 700; color: var(--navy); line-height: 1.4;
+}
+.arrow { color: var(--text3); font-size: 12px; transition: transform 0.2s; flex-shrink: 0; display: inline-block; }
+.arrow.open { transform: rotate(90deg); color: var(--purple); }
+.concept-body { display: none; padding: 0 1.5rem 1.5rem; border-top: 1px solid var(--border); }
+.concept-body.show { display: block; }
+.concept-body p  { font-size: 15px; color: var(--text2); line-height: 1.8; margin-top: 1rem; }
+.concept-body ul { margin: 10px 0 0 1.3rem; }
+.concept-body li { font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 6px; }
+.concept-eq {
+  font-family: 'Courier New', monospace; font-size: 14.5px;
+  background: var(--purple-l); padding: 14px 18px; border-radius: 10px;
+  margin: 14px 0; display: block; color: var(--navy);
+  line-height: 1.9; white-space: pre-wrap;
+  border-left: 3px solid var(--purple);
+}
+.info-box    {
+  background: #EFF6FF; border-left: 4px solid #3B82F6;
+  padding: 14px 18px; border-radius: 0 10px 10px 0; margin-top: 16px;
+  font-size: 14.5px; color: #1E40AF; line-height: 1.7;
+}
+.warn-box    {
+  background: var(--amber-l); border-left: 4px solid var(--amber);
+  padding: 14px 18px; border-radius: 0 10px 10px 0; margin-top: 16px;
+  font-size: 14.5px; color: #78350F; line-height: 1.7;
+}
+.success-box {
+  background: var(--green-l); border-left: 4px solid var(--green);
+  padding: 14px 18px; border-radius: 0 10px 10px 0; margin-top: 16px;
+  font-size: 14.5px; color: #14532D; line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .concept-title { font-size: 14.5px; }
+  .concept-body p, .concept-body li { font-size: 14px; }
+  .concept-eq { font-size: 13.5px; padding: 12px 14px; }
+  .info-box, .warn-box, .success-box { font-size: 13.5px; padding: 12px 14px; }
+}
+
+/* ══ HERO STRIP on section headers ══ */
+.hero-strip {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+  border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.75rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+}
+.hero-strip h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px; font-weight: 800; color: #fff;
+}
+.hero-strip p { font-size: 13.5px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+.hero-badge {
+  background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <div style="display:flex;align-items:center;gap:10px;"><h1>ML Exam Study App</h1><span class="badge">AIMLZG565 – L5</span></div>
-    <p>Prof. Ajeya B Jois · Linear & Logistic Regression · Classification Metrics</p>
+<!-- ══ HEADER ══ -->
+<header id="site-header">
+  <div class="hinner">
+    <div class="hlogo">
+      <div class="hlogo-icon">🎓</div>
+      <div class="hlogo-text">
+        <h1>ML Exam Study App <span class="hbadge">AIMLZG565</span></h1>
+        <p>Prof. Ajeya B Jois · Lecture 5 · ML Exam Prep</p>
+      </div>
+    </div>
+    <div class="hright">
+      <button class="collapse-btn" id="collapse-btn" title="Toggle header">▲</button>
+    </div>
   </div>
 </header>
 
-<div class="container">
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('formulas')">📋 Formula sheet</button>
-    <button class="tab" onclick="switchTab('flashcards')">🃏 Flashcards (16)</button>
-    <button class="tab" onclick="switchTab('problems')">✏️ Practice problems</button>
-    <button class="tab" onclick="switchTab('concepts')">🔍 Concept deep-dives</button>
+<!-- ══ NAV ══ -->
+<nav id="site-nav">
+  <div class="nav-inner">
+    <button class="tab active" onclick="switchTab('formulas',this)">
+      <span class="tab-icon">📋</span><span class="tab-label">Formula Sheet</span>
+    </button>
+    <button class="tab" onclick="switchTab('flashcards',this)">
+      <span class="tab-icon">🃏</span><span class="tab-label">Flashcards</span>
+    </button>
+    <button class="tab" onclick="switchTab('problems',this)">
+      <span class="tab-icon">✏️</span><span class="tab-label">Practice Problems</span>
+    </button>
+    <button class="tab" onclick="switchTab('concepts',this)">
+      <span class="tab-icon">🔍</span><span class="tab-label">Concept Deep-Dives</span>
+    </button>
   </div>
+</nav>
+
+<!-- ══ CONTENT ══ -->
+<div class="container">
 
   <!-- FORMULA SHEET -->
   <div id="formulas" class="section active">
-    <div class="section-title">All key formulas from Lecture 5</div>
-    <div class="formula-grid">
-
-      <div class="formula-card">
-        <span class="tag tag-blue">Linear regression</span>
-        <div class="fname">Prediction</div>
-        <div class="feq">Ŷ = W₀ + W₁X₁ + W₂X₂ + ... + WₙXₙ</div>
-        <div class="fnote">W₀ = intercept (bias); W₁…Wₙ = feature weights</div>
+    <div class="hero-strip">
+      <div>
+        <h2>Formula Sheet</h2>
+        <p>14 key formulas from Lecture 5 — click any card to flip and see notation explained</p>
       </div>
-
-      <div class="formula-card">
-        <span class="tag tag-blue">Linear regression</span>
-        <div class="fname">Gradient for W₀ (intercept)</div>
-        <div class="feq">∂J/∂W₀ = (1/N) × Σ(ŷᵢ − yᵢ)</div>
-        <div class="fnote">Average of all prediction errors across N data points</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-blue">Linear regression</span>
-        <div class="fname">Gradient for Wⱼ (feature weight)</div>
-        <div class="feq">∂J/∂Wⱼ = (1/N) × Σ(ŷᵢ − yᵢ) × xᵢⱼ</div>
-        <div class="fnote">Error × feature value, averaged over all points</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-blue">Gradient descent</span>
-        <div class="fname">Parameter update rule</div>
-        <div class="feq">W_new = W_old − α × gradient</div>
-        <div class="fnote">α = learning rate. Apply to every weight each iteration.</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-teal">Logistic regression</span>
-        <div class="fname">Sigmoid / logit function</div>
-        <div class="feq">σ(z) = 1 / (1 + e^(−z))
-z = θ₀ + θ₁X₁ + ... + θₙXₙ</div>
-        <div class="fnote">Output always in (0,1); interpreted as probability of class 1</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-teal">Logistic regression</span>
-        <div class="fname">Decision rule (default threshold)</div>
-        <div class="feq">σ(z) ≥ 0.5 → predict class 1
-σ(z) &lt; 0.5  → predict class 0</div>
-        <div class="fnote">Threshold = 0.5 by default (corresponds to z = 0)</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-amber">Loss function</span>
-        <div class="fname">Log loss — single data point</div>
-        <div class="feq">L = −y·log(ŷ) − (1−y)·log(1−ŷ)</div>
-        <div class="fnote">Binary cross-entropy. Convex — works reliably with gradient descent.</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-amber">Loss function</span>
-        <div class="fname">Cost function J(θ) over all N points</div>
-        <div class="feq">J(θ) = −(1/N) Σ[yᵢ·log(ŷᵢ)
-         + (1−yᵢ)·log(1−ŷᵢ)]</div>
-        <div class="fnote">Minimize this using gradient descent to train the model</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-coral">Classification metrics</span>
-        <div class="fname">Accuracy</div>
-        <div class="feq">Accuracy = (TP + TN) / (TP+TN+FP+FN)</div>
-        <div class="fnote">Warning: misleading on imbalanced datasets</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-coral">Classification metrics</span>
-        <div class="fname">Precision</div>
-        <div class="feq">Precision = TP / (TP + FP)</div>
-        <div class="fnote">Of all I predicted positive, how many actually are?</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-coral">Classification metrics</span>
-        <div class="fname">Recall (sensitivity)</div>
-        <div class="feq">Recall = TP / (TP + FN)</div>
-        <div class="fnote">Of all actual positives, how many did I correctly catch?</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-coral">Classification metrics</span>
-        <div class="fname">F1 score</div>
-        <div class="feq">F1 = 2 × (P × R) / (P + R)</div>
-        <div class="fnote">Harmonic mean of precision & recall. Use when both matter equally.</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-coral">Classification metrics</span>
-        <div class="fname">F-beta score (industry)</div>
-        <div class="feq">Fβ = (1+β²)×(P×R) / (β²×P + R)</div>
-        <div class="fnote">β&gt;1: recall matters more. β&lt;1: precision matters more.</div>
-      </div>
-
-      <div class="formula-card">
-        <span class="tag tag-teal">Odds ratio (interpretation)</span>
-        <div class="fname">Coefficient interpretation</div>
-        <div class="feq">Odds ratio = e^β</div>
-        <div class="fnote">e.g. β=0.3 → odds ratio 1.35 → 35% increase in odds per unit increase in X (holding others constant)</div>
-      </div>
-
+      <span class="hero-badge">14 Formulas</span>
     </div>
+    <div class="formula-grid" id="formula-grid"></div>
   </div>
 
   <!-- FLASHCARDS -->
   <div id="flashcards" class="section">
+    <div class="hero-strip">
+      <div>
+        <h2>Flashcards</h2>
+        <p>16 exam-ready cards across all topics — filter by deck, rate each card, track your score</p>
+      </div>
+      <span class="hero-badge">16 Cards</span>
+    </div>
+    <div class="deck-row" id="deck-row"></div>
     <div class="fc-wrap">
       <div class="fc-meta">
         <span class="fc-counter" id="fc-counter">Card 1 of 16</span>
-        <span class="fc-score" id="fc-score">Score: 0 / 0</span>
+        <span class="fc-score"   id="fc-score">Score: 0 / 0</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="fc-progress" style="width:0%"></div></div>
       <div class="flashcard" id="flashcard" onclick="revealAnswer()">
         <span class="tag" id="card-tag" style="margin-bottom:1rem;"></span>
-        <div class="card-q" id="card-q"></div>
-        <div class="card-a" id="card-a"></div>
-        <div class="card-hint" id="card-hint">Click to reveal answer</div>
+        <div class="card-q"    id="card-q"></div>
+        <div class="card-a"    id="card-a"></div>
+        <div class="card-hint" id="card-hint">Click card to reveal answer</div>
       </div>
       <div class="fc-btns">
-        <button class="btn btn-red" onclick="rateCard(false)">✗ Needs review</button>
-        <button class="btn" onclick="nextCard()">→ Skip</button>
-        <button class="btn btn-green" onclick="rateCard(true)">✓ Got it</button>
+        <button class="btn btn-red"   onclick="rateCard(false)">✗ Needs Review</button>
+        <button class="btn"           onclick="nextCard()">→ Skip</button>
+        <button class="btn btn-green" onclick="rateCard(true)">✓ Got It</button>
       </div>
       <div style="text-align:center;margin-top:1rem;">
-        <button class="btn btn-primary" onclick="resetCards()">↺ Restart deck</button>
+        <button class="btn btn-primary" onclick="resetCards()">↺ Restart Deck</button>
       </div>
     </div>
   </div>
 
   <!-- PRACTICE PROBLEMS -->
   <div id="problems" class="section">
-    <div class="section-title">Worked problems — click "Show solution" to reveal steps</div>
+    <div class="hero-strip">
+      <div>
+        <h2>Practice Problems</h2>
+        <p>5 fully worked problems — attempt first, then reveal step-by-step solutions</p>
+      </div>
+      <span class="hero-badge">5 Problems</span>
+    </div>
     <div id="problems-list"></div>
   </div>
 
-  <!-- CONCEPT DEEP-DIVES -->
+  <!-- CONCEPTS -->
   <div id="concepts" class="section">
-    <div class="section-title">Click any concept to expand</div>
+    <div class="hero-strip">
+      <div>
+        <h2>Concept Deep-Dives</h2>
+        <p>The "why" behind every concept — expand any topic for detailed explanation</p>
+      </div>
+      <span class="hero-badge">6 Concepts</span>
+    </div>
     <div id="concepts-list"></div>
   </div>
 
 </div>
 
 <script>
-const cards = [
-  { topic:"Linear regression", tclass:"tag-blue",
+/* ════════════════════════════
+   DATA
+════════════════════════════ */
+const formulas = [
+  { tag:"Linear Regression", tc:"tag-purple", name:"Prediction equation",
+    eq:"Ŷ = W₀ + W₁X₁ + W₂X₂ + ... + WₙXₙ",
+    note:"W₀ = intercept. W₁…Wₙ = feature weights.",
+    back:["Ŷ (Y-hat) = the model's predicted output value","W₀ = bias/intercept — baseline when all features are zero","W₁, W₂ ... Wₙ = weights the model learns for each feature","X₁, X₂ ... Xₙ = input feature values (e.g. BMI, diastolic pressure)","Goal: find W values that minimise prediction error"] },
+  { tag:"Linear Regression", tc:"tag-purple", name:"Gradient for W₀ (intercept)",
+    eq:"∂J/∂W₀ = (1/N) × Σ(ŷᵢ − yᵢ)",
+    note:"Average of all prediction errors across N data points.",
+    back:["∂J/∂W₀ = rate of change of cost with respect to W₀","N = total number of training data points","Σ = sum over all points i = 1 to N","ŷᵢ = model's predicted value for point i","yᵢ = actual true label for point i","ŷᵢ − yᵢ = prediction error (positive = over-predicted)"] },
+  { tag:"Linear Regression", tc:"tag-purple", name:"Gradient for Wⱼ (feature weight)",
+    eq:"∂J/∂Wⱼ = (1/N) × Σ(ŷᵢ − yᵢ) × xᵢⱼ",
+    note:"Error × feature value, averaged over all N points.",
+    back:["j = index of the feature (j=1 for BMI, j=2 for DP)","xᵢⱼ = value of feature j for data point i","Each error is multiplied by its corresponding feature value","Then all products are averaged over N points","Tells us: how sensitive is the loss to a change in Wⱼ?"] },
+  { tag:"Gradient Descent", tc:"tag-purple", name:"Parameter update rule",
+    eq:"W_new = W_old − α × gradient",
+    note:"Apply to every weight simultaneously each iteration.",
+    back:["W_new = updated weight after this iteration","W_old = current weight before the update","α (alpha) = learning rate — controls step size (0.02 in lecture)","gradient = ∂J/∂W computed above","Subtract to move downhill on the loss surface","Repeat until convergence"] },
+  { tag:"Logistic Regression", tc:"tag-teal", name:"Sigmoid / logit function",
+    eq:"σ(z) = 1 / (1 + e^(−z))\nz = θ₀ + θ₁X₁ + ... + θₙXₙ",
+    note:"Output always in (0,1). Probability of class 1.",
+    back:["σ (sigma) = the sigmoid / squashing function","z = linear combination of features (same as linear regression)","e = Euler's number ≈ 2.718","z→+∞ : σ→1  |  z→−∞ : σ→0  |  z=0 : σ=0.5","Output = probability that the input belongs to class 1","θ (theta) = model parameters (same role as W in linear regression)"] },
+  { tag:"Logistic Regression", tc:"tag-teal", name:"Decision rule",
+    eq:"σ(z) ≥ 0.5  →  predict class 1\nσ(z) < 0.5   →  predict class 0",
+    note:"Default threshold = 0.5 (corresponds to z = 0).",
+    back:["σ(z) = probability input belongs to class 1","0.5 = default threshold (adjustable per application)","Class 1 = positive (e.g. pass, disease present, job offered)","Class 0 = negative (e.g. fail, no disease, no job)","z = 0 gives σ = 0.5 exactly — this IS the decision boundary","Lower threshold → higher recall. Higher threshold → higher precision."] },
+  { tag:"Loss Function", tc:"tag-amber", name:"Log loss — single point",
+    eq:"L = −y·log(ŷ) − (1−y)·log(1−ŷ)",
+    note:"Binary cross-entropy. Convex — reliable with gradient descent.",
+    back:["L = loss for one data point (how wrong the prediction is)","y = actual true label (0 or 1)","ŷ (y-hat) = predicted probability from sigmoid (0 to 1)","log = natural logarithm (ln)","When y=1: reduces to −log(ŷ) → 0 if ŷ=1, ∞ if ŷ=0","When y=0: reduces to −log(1−ŷ) → 0 if ŷ=0, ∞ if ŷ=1"] },
+  { tag:"Loss Function", tc:"tag-amber", name:"Cost function J(θ)",
+    eq:"J(θ) = −(1/N) Σ[ yᵢ·log(ŷᵢ)\n         + (1−yᵢ)·log(1−ŷᵢ) ]",
+    note:"Minimise this via gradient descent to train the model.",
+    back:["J(θ) = total cost over all training examples","θ = all model parameters (θ₀, θ₁ ... θₙ) to optimise","−(1/N) = negative for minimisation; divide by N for average","Σ = sum over all N training points","yᵢ·log(ŷᵢ) = cost when actual label is 1","(1−yᵢ)·log(1−ŷᵢ) = cost when actual label is 0"] },
+  { tag:"Metrics", tc:"tag-coral", name:"Accuracy",
+    eq:"Accuracy = (TP + TN) / (TP+TN+FP+FN)",
+    note:"Misleading on imbalanced datasets.",
+    back:["TP = True Positive: actual=1, predicted=1 ✓","TN = True Negative: actual=0, predicted=0 ✓","FP = False Positive: actual=0, predicted=1 ✗ (false alarm)","FN = False Negative: actual=1, predicted=0 ✗ (missed)","TP+TN = all correct predictions / denominator = all predictions","95%/5% class split → predicting all-0 = 95% accuracy but useless"] },
+  { tag:"Metrics", tc:"tag-coral", name:"Precision",
+    eq:"Precision = TP / (TP + FP)",
+    note:"Of all predicted positive, how many actually are?",
+    back:["TP = cases correctly predicted positive","FP = cases wrongly predicted positive (false alarms)","TP+FP = everything the model labelled positive","'How trustworthy are my positive predictions?'","High precision → few false alarms","Use when FP is costly: spam detection, stock predictions"] },
+  { tag:"Metrics", tc:"tag-coral", name:"Recall (sensitivity)",
+    eq:"Recall = TP / (TP + FN)",
+    note:"Of all actual positives, how many did I catch?",
+    back:["TP = actual positives correctly identified","FN = actual positives the model missed","TP+FN = all real positive cases in the dataset","'Did I find all the real positives?'","High recall → few missed cases","Use when FN is costly: cancer detection, fraud, healthcare"] },
+  { tag:"Metrics", tc:"tag-coral", name:"F1 score",
+    eq:"F1 = 2 × (P × R) / (P + R)",
+    note:"Harmonic mean of precision and recall.",
+    back:["P = Precision  |  R = Recall","Harmonic mean penalises extreme imbalance between P and R","If either P or R is very low, F1 will be low too","F1 = 1.0 perfect, F1 = 0 worst case","Use when you need one balanced score covering both P and R","Better than accuracy for imbalanced class distributions"] },
+  { tag:"Metrics", tc:"tag-coral", name:"F-beta score",
+    eq:"Fβ = (1+β²)×(P×R) / (β²×P + R)",
+    note:"β>1: recall weighted more. β<1: precision weighted more.",
+    back:["β (beta) = weighting factor chosen based on the application","β = 1: equal weight → same as F1","β > 1: recall matters more (healthcare, fraud — β=3–6)","β < 1: precision matters more (stocks, spam — β=0.5)","Prof's example: PayPal fraud detection used β between 3–6","Not in syllabus but widely used in industry"] },
+  { tag:"Logistic Regression", tc:"tag-teal", name:"Odds ratio",
+    eq:"Odds ratio = e^β",
+    note:"How each feature affects probability of class 1.",
+    back:["β = the learned coefficient for a feature (θ or W value)","e^β = Euler's number raised to the coefficient","e^β = 1.35 → 1-unit increase in X raises odds by 35%","e^β = 0.64 → 1-unit increase in X lowers odds by 36%","Lecture: CGPA coeff=0.3 → odds ratio≈1.35 → 35% more likely job","IQ coeff=−0.45 → odds ratio≈0.64 → 36% less likely per unit IQ","Always: 'holding all other features constant'"] }
+];
+
+const allCards = [
+  { deck:"Linear Regression", topic:"Linear Regression", tc:"tag-purple",
     q:"What is the gradient update rule for all weights?",
-    a:"W_new = W_old − α × gradient\n\nwhere α is the learning rate.\nApply this to W₀, W₁, W₂ ... simultaneously each iteration." },
-  { topic:"Linear regression", tclass:"tag-blue",
-    q:"How do you compute the gradient for W₀ (the intercept)?",
-    a:"∂J/∂W₀ = (1/N) × Σ(ŷᵢ − yᵢ)\n\nIt is the average of all prediction errors across N data points.\nNote: error = predicted − actual." },
-  { topic:"Linear regression", tclass:"tag-blue",
-    q:"How do you compute the gradient for W₁ (a feature weight)?",
-    a:"∂J/∂W₁ = (1/N) × Σ(ŷᵢ − yᵢ) × x₁ᵢ\n\nMultiply each error by its corresponding feature value, then average over all N points." },
-  { topic:"Linear regression", tclass:"tag-blue",
-    q:"In the lecture example: errors = [−0.26, +0.63, −0.61], α=0.02, W₀=5. What is W₀ after iteration 1?",
-    a:"Gradient W₀ = (−0.26 + 0.63 − 0.61)/3 = −0.08\n\nW₀_new = 5 − 0.02×(−0.08)\n       = 5 + 0.0016\n       = 5.0016" },
-  { topic:"Logistic regression", tclass:"tag-teal",
-    q:"What is the sigmoid function formula and what does it output?",
-    a:"σ(z) = 1 / (1 + e^(−z))\n\nOutput is always between 0 and 1.\nInterpreted as the probability that the input belongs to class 1." },
-  { topic:"Logistic regression", tclass:"tag-teal",
+    a:"W_new = W_old − α × gradient\n\nApply simultaneously to W₀, W₁, W₂ ... each iteration.\nα = learning rate (0.02 in the lecture example)." },
+  { deck:"Linear Regression", topic:"Linear Regression", tc:"tag-purple",
+    q:"How do you compute the gradient for W₀ (intercept)?",
+    a:"∂J/∂W₀ = (1/N) × Σ(ŷᵢ − yᵢ)\n\nSimply the average of all prediction errors.\nNote: error = predicted − actual." },
+  { deck:"Linear Regression", topic:"Linear Regression", tc:"tag-purple",
+    q:"How do you compute the gradient for W₁ (feature weight)?",
+    a:"∂J/∂W₁ = (1/N) × Σ(ŷᵢ − yᵢ) × x₁ᵢ\n\nMultiply each error by its feature value.\nThen average over all N data points." },
+  { deck:"Linear Regression", topic:"Linear Regression", tc:"tag-purple",
+    q:"Lecture example: errors=[−0.26,+0.63,−0.61], α=0.02, W₀=5.\nCompute W₀ after one gradient descent iteration.",
+    a:"Gradient = (−0.26 + 0.63 − 0.61) / 3 = −0.08\n\nW₀_new = 5 − 0.02 × (−0.08)\n       = 5 + 0.0016\n       = 5.0016" },
+  { deck:"Logistic Regression", topic:"Logistic Regression", tc:"tag-teal",
+    q:"What is the sigmoid function and what range does it output?",
+    a:"σ(z) = 1 / (1 + e^(−z))\n\nOutput is always between 0 and 1.\nInterpreted as the probability that the input is class 1." },
+  { deck:"Logistic Regression", topic:"Logistic Regression", tc:"tag-teal",
     q:"What is Z in logistic regression?",
-    a:"Z = θ₀ + θ₁X₁ + θ₂X₂ + ... + θₙXₙ\n(also written as θᵀX)\n\nIt is the linear combination of features before the sigmoid is applied." },
-  { topic:"Logistic regression", tclass:"tag-teal",
-    q:"What is the decision rule? What threshold is used by default?",
-    a:"If σ(z) ≥ 0.5 → predict class 1\nIf σ(z) < 0.5  → predict class 0\n\nDefault threshold = 0.5, which corresponds to z = 0." },
-  { topic:"Logistic regression", tclass:"tag-teal",
-    q:"Why can't we use linear regression for classification? (2 reasons)",
-    a:"1. Unbounded output: H(x) ranges from −∞ to +∞, not a valid probability.\n\n2. Sensitive to outliers: Adding one extreme point shifts the regression line, potentially misclassifying previously correct points." },
-  { topic:"Loss functions", tclass:"tag-amber",
+    a:"Z = θ₀ + θ₁X₁ + θ₂X₂ + ... + θₙXₙ  (also θᵀX)\n\nLinear combination of features — same as linear regression.\nSigmoid is then applied on top of Z." },
+  { deck:"Logistic Regression", topic:"Logistic Regression", tc:"tag-teal",
+    q:"What is the default decision rule in logistic regression?",
+    a:"If σ(z) ≥ 0.5  →  predict class 1\nIf σ(z) < 0.5   →  predict class 0\n\nDefault threshold = 0.5 (corresponds to z = 0)." },
+  { deck:"Logistic Regression", topic:"Logistic Regression", tc:"tag-teal",
+    q:"Why can't linear regression be used for classification? (2 reasons)",
+    a:"1. UNBOUNDED OUTPUT\n   H(x) ranges from −∞ to +∞.\n   Not a valid probability — needs to stay in [0,1].\n\n2. SENSITIVE TO OUTLIERS\n   One extreme point shifts the regression line,\n   potentially misclassifying previously correct points." },
+  { deck:"Loss Functions", topic:"Loss Functions", tc:"tag-amber",
     q:"Write the log loss formula for a single data point.",
-    a:"L = −y·log(ŷ) − (1−y)·log(1−ŷ)\n\nWhen y=1: reduces to −log(ŷ)\nWhen y=0: reduces to −log(1−ŷ)\n\nCost → 0 when prediction matches label; cost → ∞ when completely wrong." },
-  { topic:"Loss functions", tclass:"tag-amber",
-    q:"Why can't MSE be used as the loss function for logistic regression?",
-    a:"MSE composed with the sigmoid creates a non-convex loss surface with multiple local minima.\n\nGradient descent can get trapped and return suboptimal parameters.\n\nLog loss is convex → gradient descent reliably finds the global minimum." },
-  { topic:"Loss functions", tclass:"tag-amber",
+    a:"L = −y·log(ŷ) − (1−y)·log(1−ŷ)\n\nWhen y=1: reduces to −log(ŷ)\nWhen y=0: reduces to −log(1−ŷ)\n\nCost→0 when prediction matches. Cost→∞ when completely wrong." },
+  { deck:"Loss Functions", topic:"Loss Functions", tc:"tag-amber",
+    q:"Why can't MSE be used as the loss for logistic regression?",
+    a:"MSE + sigmoid = NON-CONVEX loss surface.\n\nMultiple local minima exist — gradient descent gets trapped.\n\nLog loss IS convex with sigmoid → guaranteed convergence." },
+  { deck:"Loss Functions", topic:"Loss Functions", tc:"tag-amber",
     q:"Write the full cost function J(θ) for logistic regression.",
-    a:"J(θ) = −(1/N) Σᵢ [yᵢ·log(ŷᵢ) + (1−yᵢ)·log(1−ŷᵢ)]\n\nwhere ŷᵢ = σ(θᵀXᵢ)\n\nObjective: find θ values that minimize J(θ)." },
-  { topic:"Confusion matrix", tclass:"tag-coral",
+    a:"J(θ) = −(1/N) Σᵢ [yᵢ·log(ŷᵢ) + (1−yᵢ)·log(1−ŷᵢ)]\n\nwhere ŷᵢ = σ(θᵀXᵢ)\n\nMinimise J(θ) to find optimal parameters θ." },
+  { deck:"Confusion Matrix & Metrics", topic:"Confusion Matrix", tc:"tag-coral",
     q:"Define TP, TN, FP, and FN.",
-    a:"TP (True Positive):  actual=1, predicted=1 ✓\nTN (True Negative):  actual=0, predicted=0 ✓\nFP (False Positive): actual=0, predicted=1 ✗ (false alarm)\nFN (False Negative): actual=1, predicted=0 ✗ (missed case)" },
-  { topic:"Confusion matrix", tclass:"tag-coral",
-    q:"What is the memory trick for TP/TN/FP/FN?",
-    a:"Left letter (T/F) = was the prediction CORRECT?\n  T = correct, F = wrong\n\nRight letter (P/N) = what did the MODEL PREDICT?\n  P = predicted positive (1), N = predicted negative (0)" },
-  { topic:"Classification metrics", tclass:"tag-coral",
-    q:"What is precision, and when should you maximize it?",
-    a:"Precision = TP / (TP + FP)\n'Of all I predicted positive, how many actually are?'\n\nMaximize when false positives are costly:\n• Spam detection (real emails lost)\n• Stock market predictions" },
-  { topic:"Classification metrics", tclass:"tag-coral",
-    q:"What is recall, and when should you maximize it?",
-    a:"Recall = TP / (TP + FN)\n'Of all actual positives, how many did I catch?'\n\nMaximize when false negatives are costly:\n• Cancer/disease detection\n• Fraud detection\n• Any healthcare application" },
-  { topic:"Classification metrics", tclass:"tag-coral",
-    q:"Why is accuracy alone insufficient for imbalanced datasets?",
-    a:"Example: 95% of data is class 0, 5% is class 1.\nA model predicting only class 0 gets 95% accuracy but is completely useless.\n\nAccuracy ignores class distribution.\nPrecision, Recall, and F1 are more informative in such cases." }
+    a:"TP (True Positive):  actual=1, predicted=1  ✓ correct\nTN (True Negative):  actual=0, predicted=0  ✓ correct\nFP (False Positive): actual=0, predicted=1  ✗ false alarm\nFN (False Negative): actual=1, predicted=0  ✗ missed case" },
+  { deck:"Confusion Matrix & Metrics", topic:"Confusion Matrix", tc:"tag-coral",
+    q:"What is Prof. Jois's memory trick for TP/TN/FP/FN?",
+    a:"LEFT letter (T or F)\n  T = True  → prediction was CORRECT\n  F = False → prediction was WRONG\n\nRIGHT letter (P or N)\n  P = Positive → model predicted class 1\n  N = Negative → model predicted class 0" },
+  { deck:"Confusion Matrix & Metrics", topic:"Metrics", tc:"tag-coral",
+    q:"What is precision and when should you maximise it?",
+    a:"Precision = TP / (TP + FP)\n'Of all I predicted positive, how many actually are?'\n\nMaximise when FP is costly:\n• Spam detection (real emails lost)\n• Stock market predictions (wrong buy signals)" },
+  { deck:"Confusion Matrix & Metrics", topic:"Metrics", tc:"tag-coral",
+    q:"What is recall and when should you maximise it?",
+    a:"Recall = TP / (TP + FN)\n'Of all actual positives, how many did I catch?'\n\nMaximise when FN is costly:\n• Cancer / disease detection\n• Fraud detection\n• Healthcare — missing a real case is dangerous" },
+  { deck:"Confusion Matrix & Metrics", topic:"Metrics", tc:"tag-coral",
+    q:"Why is accuracy insufficient for imbalanced datasets?",
+    a:"Example: 95% class 0, 5% class 1.\nPredicting only class 0 gives 95% accuracy\nbut catches ZERO positives — completely useless.\n\nAccuracy ignores class distribution.\nUse Precision, Recall, and F1 instead." }
 ];
 
 const problems = [
-  { tag:"Linear regression", tclass:"tag-blue",
-    q:"Given: W₀=5, W₁=0.05, W₂=0.18, α=0.02. Three patients: BMI=[35,25,30], DP=[80,80,100]. Errors (y−ŷ) = [−0.26, +0.63, −0.61]. Compute updated W₀ and W₂ after one iteration.",
+  { tag:"Linear Regression", tc:"tag-purple",
+    q:"Given: W₀=5, W₁=0.05, W₂=0.18, α=0.02\nThree patients — BMI=[35,25,30], DP=[80,80,100]\nErrors (y−ŷ) = [−0.26, +0.63, −0.61]\n\nCompute updated W₀ and W₂ after one gradient descent iteration.",
     steps:[
-      { label:"Gradient for W₀ (intercept)", eq:"= (1/N) × Σ errors\n= (−0.26 + 0.63 − 0.61) / 3\n= −0.24 / 3\n= −0.08", ans:false },
-      { label:"Update W₀", eq:"W₀_new = 5 − 0.02 × (−0.08)\n       = 5 + 0.0016\n       = 5.0016", ans:false },
-      { label:"Gradient for W₂ (DP)", eq:"= (1/N) × Σ (errorᵢ × DPᵢ)\n= [(−0.26×80) + (0.63×80) + (−0.61×100)] / 3\n= [−20.8 + 50.4 − 61] / 3\n= −31.4 / 3\n= −10.4667", ans:false },
-      { label:"Update W₂", eq:"W₂_new = 0.18 − 0.02 × (−10.4667)\n       = 0.18 + 0.2093\n       = 0.1793 (using original W₂=0.18)", ans:false },
-      { label:"Final answer", eq:"W₀_new = 5.0016\nW₂_new ≈ 0.1793", ans:true }
-    ]
-  },
-  { tag:"Linear regression", tclass:"tag-blue",
-    q:"Using the same data (BMI=[35,25,30], errors=[−0.26,+0.63,−0.61], α=0.02, W₁=0.05). Compute the updated W₁.",
+      { label:"Gradient for W₀ (intercept)", eq:"∂J/∂W₀ = (1/N) × Σ errors\n        = (−0.26 + 0.63 − 0.61) / 3\n        = −0.24 / 3  =  −0.08", ans:false },
+      { label:"Update W₀", eq:"W₀_new = 5 − (0.02 × −0.08)\n       = 5 + 0.0016  =  5.0016", ans:false },
+      { label:"Gradient for W₂ (diastolic pressure)", eq:"∂J/∂W₂ = [(−0.26×80) + (0.63×80) + (−0.61×100)] / 3\n        = [−20.8 + 50.4 − 61] / 3\n        = −31.4 / 3  =  −10.4667", ans:false },
+      { label:"Update W₂", eq:"W₂_new = 0.18 − (0.02 × −10.4667)\n       = 0.18 + 0.2093  ≈  0.1793", ans:false },
+      { label:"✓ Final Answers", eq:"W₀_new = 5.0016\nW₂_new ≈ 0.1793", ans:true }
+    ]},
+  { tag:"Linear Regression", tc:"tag-purple",
+    q:"Same dataset: BMI=[35,25,30], errors=[−0.26,+0.63,−0.61], α=0.02, W₁=0.05\n\nCompute the updated W₁.",
     steps:[
-      { label:"Gradient for W₁ (BMI)", eq:"= (1/N) × Σ (errorᵢ × BMIᵢ)\n= [(−0.26×35) + (0.63×25) + (−0.61×30)] / 3", ans:false },
-      { label:"Numerator calculation", eq:"= −9.1 + 15.75 − 18.3\n= −11.65", ans:false },
-      { label:"Divide by N=3", eq:"= −11.65 / 3 = −3.8833", ans:false },
-      { label:"Update W₁", eq:"W₁_new = 0.05 − 0.02 × (−3.8833)\n       = 0.05 + 0.0777\n       = 0.1277", ans:false },
-      { label:"Final answer", eq:"W₁_new ≈ 0.1277\n(Lecture used initial W₁=0, giving 0.0477)", ans:true }
-    ]
-  },
-  { tag:"Logistic regression", tclass:"tag-teal",
-    q:"A logistic regression model: Z = −2 + 0.8·(hours_studied). A student studied 4 hours. Compute the predicted probability and classify them (pass=1 / fail=0).",
+      { label:"Gradient for W₁ (BMI)", eq:"∂J/∂W₁ = (1/N) × Σ (errorᵢ × BMIᵢ)", ans:false },
+      { label:"Expand the summation", eq:"= [(−0.26×35) + (0.63×25) + (−0.61×30)] / 3\n= [−9.1 + 15.75 − 18.3] / 3\n= −11.65 / 3  =  −3.8833", ans:false },
+      { label:"Update W₁", eq:"W₁_new = 0.05 − (0.02 × −3.8833)\n       = 0.05 + 0.0777  ≈  0.1277\n\nNote: lecture used initial W₁=0 → gives W₁_new = 0.0477", ans:false },
+      { label:"✓ Final Answer", eq:"W₁_new ≈ 0.0477  (from initial W₁ = 0)", ans:true }
+    ]},
+  { tag:"Logistic Regression", tc:"tag-teal",
+    q:"A logistic model: Z = −2 + 0.8 × (hours_studied)\nA student studied 4 hours.\n\nCompute the predicted probability and classify as pass (1) or fail (0).",
     steps:[
-      { label:"Step 1 — Compute Z", eq:"Z = −2 + 0.8 × 4\n  = −2 + 3.2\n  = 1.2", ans:false },
-      { label:"Step 2 — Apply sigmoid", eq:"σ(1.2) = 1 / (1 + e^(−1.2))\n       = 1 / (1 + 0.3012)\n       = 1 / 1.3012\n       ≈ 0.769", ans:false },
-      { label:"Step 3 — Apply decision rule", eq:"0.769 ≥ 0.5 → predict class 1", ans:false },
-      { label:"Final answer", eq:"Predicted probability = 0.769\nPredicted class = 1 (PASS)", ans:true }
-    ]
-  },
-  { tag:"Confusion matrix", tclass:"tag-coral",
-    q:"Actual = [1,1,0,1,0,1,0,0], Predicted = [1,0,0,1,1,1,0,1]. Build the confusion matrix. Calculate accuracy, precision, recall, and F1 score.",
+      { label:"Step 1 — Compute Z", eq:"Z = −2 + 0.8 × 4\n  = −2 + 3.2  =  1.2", ans:false },
+      { label:"Step 2 — Apply sigmoid", eq:"σ(1.2) = 1 / (1 + e^(−1.2))\n       = 1 / (1 + 0.3012)\n       = 1 / 1.3012  ≈  0.769  →  76.9% probability of passing", ans:false },
+      { label:"Step 3 — Apply threshold", eq:"0.769 ≥ 0.5  →  predict class 1  (PASS)", ans:false },
+      { label:"✓ Final Answer", eq:"Predicted probability = 0.769\nPredicted class       = 1  →  PASS", ans:true }
+    ]},
+  { tag:"Confusion Matrix", tc:"tag-coral",
+    q:"Actual    = [1, 1, 0, 1, 0, 1, 0, 0]\nPredicted = [1, 0, 0, 1, 1, 1, 0, 1]\n\nBuild the confusion matrix.\nCompute accuracy, precision, recall, and F1 score.",
     steps:[
-      { label:"Step 1 — Count each cell", eq:"TP: actual=1 AND pred=1 → rows 1,4,6 → TP=3\nFN: actual=1 AND pred=0 → row 2        → FN=1\nFP: actual=0 AND pred=1 → rows 5,8     → FP=2\nTN: actual=0 AND pred=0 → rows 3,7     → TN=2", ans:false },
-      { label:"Step 2 — Accuracy", eq:"= (TP+TN)/(TP+TN+FP+FN)\n= (3+2)/(3+2+2+1)\n= 5/8 = 0.625 (62.5%)", ans:false },
-      { label:"Step 3 — Precision", eq:"= TP/(TP+FP)\n= 3/(3+2)\n= 3/5 = 0.60", ans:false },
-      { label:"Step 4 — Recall", eq:"= TP/(TP+FN)\n= 3/(3+1)\n= 3/4 = 0.75", ans:false },
-      { label:"Step 5 — F1 score", eq:"= 2×(P×R)/(P+R)\n= 2×(0.60×0.75)/(0.60+0.75)\n= 0.90/1.35\n≈ 0.667", ans:false },
-      { label:"Final answer", eq:"Accuracy=62.5%  Precision=0.60\nRecall=0.75     F1=0.667", ans:true }
-    ]
-  },
-  { tag:"Classification metrics", tclass:"tag-coral",
-    q:"Model A: TP=90, TN=850, FP=10, FN=50. Model B: TP=130, TN=800, FP=60, FN=10. This is a cancer detection system. Which model should you deploy and why?",
+      { label:"Step 1 — Count each cell (row by row)", eq:"Row 1: actual=1, pred=1  →  TP ✓\nRow 2: actual=1, pred=0  →  FN ✗\nRow 3: actual=0, pred=0  →  TN ✓\nRow 4: actual=1, pred=1  →  TP ✓\nRow 5: actual=0, pred=1  →  FP ✗\nRow 6: actual=1, pred=1  →  TP ✓\nRow 7: actual=0, pred=0  →  TN ✓\nRow 8: actual=0, pred=1  →  FP ✗\n\n→  TP=3   FN=1   FP=2   TN=2", ans:false },
+      { label:"Step 2 — Accuracy", eq:"= (3+2) / (3+2+2+1)  =  5/8  =  62.5%", ans:false },
+      { label:"Step 3 — Precision", eq:"= 3 / (3+2)  =  3/5  =  0.60", ans:false },
+      { label:"Step 4 — Recall", eq:"= 3 / (3+1)  =  3/4  =  0.75", ans:false },
+      { label:"Step 5 — F1 score", eq:"= 2×(0.60×0.75)/(0.60+0.75)\n= 0.90/1.35  ≈  0.667", ans:false },
+      { label:"✓ Final Answers", eq:"Accuracy = 62.5%  |  Precision = 0.60\nRecall   = 0.75   |  F1 score  = 0.667", ans:true }
+    ]},
+  { tag:"Metrics", tc:"tag-coral",
+    q:"Model A: TP=90, TN=850, FP=10, FN=50\nModel B: TP=130, TN=800, FP=60, FN=10\n\nCancer detection system.\nCompute recall & precision for each. Which model should you deploy?",
     steps:[
-      { label:"Model A — Recall & Precision", eq:"Recall_A    = 90/(90+50) = 90/140 ≈ 0.643\nPrecision_A = 90/(90+10) = 90/100 = 0.90", ans:false },
-      { label:"Model B — Recall & Precision", eq:"Recall_B    = 130/(130+10) = 130/140 ≈ 0.929\nPrecision_B = 130/(130+60) = 130/190 ≈ 0.684", ans:false },
-      { label:"Which matters here?", eq:"Cancer detection → missing a true cancer (FN) is\nfar more dangerous than a false alarm (FP).\nTherefore RECALL is the critical metric.", ans:false },
-      { label:"Final answer", eq:"Deploy Model B.\nIt has much higher recall (0.929 vs 0.643),\nmeaning it correctly catches 93% of cancers\nvs only 64% for Model A.\nThe lower precision (more false alarms) is\nan acceptable tradeoff in healthcare.", ans:true }
-    ]
-  }
+      { label:"Model A", eq:"Recall_A    = 90/(90+50)  = 90/140  ≈ 0.643\nPrecision_A = 90/(90+10)  = 90/100  = 0.900", ans:false },
+      { label:"Model B", eq:"Recall_B    = 130/(130+10) = 130/140 ≈ 0.929\nPrecision_B = 130/(130+60) = 130/190 ≈ 0.684", ans:false },
+      { label:"Which metric matters here?", eq:"Cancer detection → missing a true cancer (FN) is\nfar more dangerous than a false alarm (FP).\n\nTherefore RECALL is the critical metric.", ans:false },
+      { label:"✓ Final Answer", eq:"Deploy MODEL B.\nModel B catches 92.9% of cancers vs 64.3% for A.\nThe lower precision (more false alarms) is an acceptable\ntradeoff — missing a cancer is far costlier.", ans:true }
+    ]}
 ];
 
 const concepts = [
-  { title:"Why sigmoid solves the classification problem",
-    body:`<p>Linear regression gives H(x) = θᵀX, which ranges from −∞ to +∞. For binary classification we need outputs in [0,1] to represent probabilities.</p>
-<p>The sigmoid "squashes" any real number into (0,1):</p>
+  { title:"Why the sigmoid function solves the classification problem",
+    body:`<p>Linear regression gives H(x) = θᵀX, which ranges from −∞ to +∞. For binary classification we need outputs in [0,1] to represent probabilities. The sigmoid squashes any real number into (0,1):</p>
 <code class="concept-eq">σ(z) = 1 / (1 + e^(−z))</code>
-<p>Key properties:</p>
-<ul>
-<li>z → +∞ : σ → 1 (high confidence class 1)</li>
-<li>z → −∞ : σ → 0 (high confidence class 0)</li>
-<li>z = 0 : σ = 0.5 → this is the decision boundary</li>
-</ul>
-<div class="info-box">Interview tip: "What does the sigmoid output represent?" — The probability that the input belongs to class 1. Above 0.5 → class 1, below 0.5 → class 0.</div>`
-  },
+<ul><li>z → +∞ : σ → 1 — very confident about class 1</li><li>z → −∞ : σ → 0 — very confident about class 0</li><li>z = 0 : σ = 0.5 — this IS the decision boundary</li></ul>
+<div class="info-box"><strong>Interview tip:</strong> "What does the sigmoid output represent?" — The probability that the input belongs to class 1. Above 0.5 → class 1, below 0.5 → class 0.</div>` },
   { title:"Why MSE fails for logistic regression — non-convexity explained",
-    body:`<p>For linear regression, MSE creates a clean bowl-shaped (convex) loss surface with one global minimum. Gradient descent easily rolls to the bottom.</p>
-<p>When you compose MSE with the sigmoid function, the resulting loss surface becomes non-convex — it has multiple valleys (local minima). Gradient descent can fall into a local minimum and never escape, returning a poor model.</p>
-<p>Log loss (binary cross-entropy) is mathematically guaranteed to be convex when used with the sigmoid. There is only one minimum, so gradient descent will always find it.</p>
-<div class="warn-box">Exam/interview trap: Don't say MSE "doesn't work." Say it creates a non-convex loss surface which prevents reliable convergence with gradient descent.</div>`
-  },
-  { title:"Precision vs recall — the tradeoff and real-world use cases",
-    body:`<p>Precision and recall are in tension. Improving one typically hurts the other. The right choice depends on the cost of each error type:</p>
-<code class="concept-eq">False Positive (FP) = predicted 1, actually 0 → false alarm
-False Negative (FN) = predicted 0, actually 1 → missed case</code>
-<p><strong>Maximize recall when FN is costly (missing real cases is dangerous):</strong></p>
-<ul>
-<li>Cancer / disease detection</li>
-<li>Fraud detection (missing fraud = financial loss)</li>
-<li>Security threat detection</li>
-</ul>
-<p><strong>Maximize precision when FP is costly (false alarms are expensive):</strong></p>
-<ul>
-<li>Spam filters — a real email flagged as spam → missed job offer</li>
-<li>Stock market predictions — wrong buy signal = financial loss</li>
-</ul>
-<div class="info-box">Prof's real example: If an offer letter email gets flagged as spam (FP), you miss your job opportunity. False positives can be very costly too.</div>`
-  },
-  { title:"Gradient descent — intuition and step size",
-    body:`<p>Imagine the loss function J(θ) as a hilly landscape. Your goal is to find the lowest valley (minimum loss). You start somewhere on this landscape and need to walk downhill.</p>
-<p>The gradient tells you the direction of steepest ascent. Subtracting it moves you downhill:</p>
+    body:`<p>For linear regression, MSE creates a bowl-shaped (convex) loss surface with one global minimum. Gradient descent rolls to the bottom reliably.</p>
+<p>When MSE is composed with the sigmoid, the result is <strong>non-convex</strong> — multiple local minima exist. Gradient descent gets trapped and returns a poor model.</p>
+<p>Log loss (binary cross-entropy) is proven convex with sigmoid. One minimum — gradient descent always finds it.</p>
+<div class="warn-box"><strong>Exam trap:</strong> Don't say MSE "doesn't work." Say: MSE creates a non-convex loss surface, preventing reliable convergence with gradient descent.</div>` },
+  { title:"Precision vs Recall — the tradeoff and real-world use cases",
+    body:`<p>Precision and recall are in tension — improving one typically hurts the other.</p>
+<code class="concept-eq">FP = predicted 1, actually 0  →  false alarm
+FN = predicted 0, actually 1  →  missed case</code>
+<p><strong>Maximise Recall when FN is costly:</strong></p><ul><li>Cancer/disease detection — missing a case is dangerous</li><li>Fraud detection — missing fraud causes financial loss</li><li>Security — missed threats worse than extra alerts</li></ul>
+<p><strong>Maximise Precision when FP is costly:</strong></p><ul><li>Spam filters — real email flagged → missed job offer</li><li>Stock predictions — wrong buy signals = financial loss</li></ul>
+<div class="info-box"><strong>Prof's example:</strong> An offer letter flagged as spam (FP) → missed job opportunity. Costly FP — so spam detection prioritises precision.</div>` },
+  { title:"Gradient descent — intuition, learning rate, convergence",
+    body:`<p>Think of J(θ) as a hilly landscape. The gradient points uphill — subtract it to go downhill:</p>
 <code class="concept-eq">W_new = W_old − α × gradient</code>
-<p>The learning rate α controls step size:</p>
-<ul>
-<li>Too large: overshoot the minimum, oscillate or diverge</li>
-<li>Too small: correct direction but converges very slowly</li>
-<li>Just right: steady, efficient convergence to minimum</li>
-</ul>
-<p>Types: Batch GD (uses all data), Stochastic GD (one point), Mini-batch GD (small batches). All are valid — batch is what we use in exam numericals.</p>
-<div class="warn-box">Key: update all weights simultaneously at each iteration. Don't use updated W₀ when computing the gradient for W₁ in the same iteration.</div>`
-  },
-  { title:"Confusion matrix — complete breakdown",
-    body:`<p>For binary classification, every prediction falls into one of four cells:</p>
-<code class="concept-eq">              Predicted 1      Predicted 0
-Actual 1   TP (correct)     FN (missed)
-Actual 0   FP (false alarm)  TN (correct)</code>
-<p>Memory trick from Prof. Jois:</p>
-<ul>
-<li>Left letter (T/F) = was the prediction correct? T=yes, F=no</li>
-<li>Right letter (P/N) = what did the model predict? P=1, N=0</li>
-</ul>
-<p>All formulas flow from these four values:</p>
+<p>Learning rate α controls step size:</p><ul><li>Too large: overshoot, oscillate or diverge</li><li>Too small: correct direction but extremely slow convergence</li><li>Just right: steady efficient convergence</li></ul>
+<p>Types: Batch GD (all data), Stochastic GD (one point), Mini-batch (small batches). For exam numericals: always use Batch GD.</p>
+<div class="warn-box"><strong>Key rule:</strong> Update all weights simultaneously. Do not use the updated W₀ when computing the gradient for W₁ in the same iteration.</div>` },
+  { title:"Confusion matrix — complete breakdown with memory trick",
+    body:`<p>Every prediction falls into one of four cells:</p>
+<code class="concept-eq">              Predicted 1         Predicted 0
+Actual 1    TP (correct ✓)      FN (missed ✗)
+Actual 0    FP (false alarm ✗)  TN (correct ✓)</code>
+<p><strong>Prof. Jois's memory trick:</strong> Left letter (T/F) = was prediction correct? Right letter (P/N) = what did the model predict?</p>
 <code class="concept-eq">Accuracy  = (TP+TN) / (TP+TN+FP+FN)
 Precision = TP / (TP+FP)
 Recall    = TP / (TP+FN)
-F1 score  = 2×P×R / (P+R)</code>
-<div class="info-box">Exam tip (from Prof): Confusion matrix + metrics is worth 5–6 marks and described as a "cakewalk." Practice filling the table from raw actual/predicted arrays.</div>`
-  },
-  { title:"F-beta score — tuning the precision-recall balance",
-    body:`<p>F1 gives equal weight to both. F-beta lets you tune the balance based on your application:</p>
+F1        = 2×P×R / (P+R)</code>
+<div class="success-box"><strong>Direct from Prof:</strong> Confusion matrix + all metrics carries 5–6 marks. Described as a "cakewalk." Practice filling the matrix from raw arrays until it's automatic.</div>` },
+  { title:"F-beta score — when F1 is not enough",
+    body:`<p>F1 gives equal weight to precision and recall. F-beta lets you tune the balance:</p>
 <code class="concept-eq">Fβ = (1+β²) × (P×R) / (β²×P + R)</code>
-<ul>
-<li>β = 1: equal weight (same as F1)</li>
-<li>β &gt; 1: recall gets more weight → use for healthcare, fraud</li>
-<li>β &lt; 1: precision gets more weight → use for stock predictions, spam</li>
-</ul>
-<p>Prof's industry example: At PayPal for fraud detection, β was typically 3–6 (recall heavily prioritized). For stock market prediction, β = 0.5 or 0.1 (precision heavily prioritized).</p>
-<div class="warn-box">Not in your syllabus but good to know. Sensitivity = Recall. Specificity = TN/(TN+FP). If you understand precision & recall, you can derive all other metrics.</div>`
-  }
+<ul><li><strong>β = 1:</strong> equal weight (same as F1)</li><li><strong>β &gt; 1:</strong> recall weighted more (use β=3–6 in healthcare/fraud)</li><li><strong>β &lt; 1:</strong> precision weighted more (use β=0.5 in stocks/spam)</li></ul>
+<p>Prof's example: PayPal fraud detection used β between 3–6. Stock market used β ≈ 0.5.</p>
+<div class="warn-box"><strong>Note:</strong> Not in syllabus but industry-standard. Sensitivity = Recall. Specificity = TN/(TN+FP).</div>` }
 ];
 
-let cur = 0, scores = {got:0, total:0}, revealed = false;
+/* ════════════════════════════
+   COLLAPSING HEADER
+════════════════════════════ */
+const hdr = document.getElementById('site-header');
+const colBtn = document.getElementById('collapse-btn');
+let isCollapsed = false, lastScroll = 0;
+colBtn.addEventListener('click', () => doCollapse(!isCollapsed));
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  if (sy > 90 && sy > lastScroll && !isCollapsed) doCollapse(true);
+  else if (sy < 30 && isCollapsed) doCollapse(false);
+  lastScroll = sy;
+}, { passive: true });
+function doCollapse(c) {
+  isCollapsed = c;
+  hdr.classList.toggle('collapsed', c);
+  colBtn.textContent = c ? '▼' : '▲';
+  colBtn.title = c ? 'Expand header' : 'Collapse header';
+}
 
-function switchTab(id) {
+/* ════════════════════════════
+   TAB SWITCHING
+════════════════════════════ */
+function switchTab(id, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll('.section').forEach(s => { s.classList.toggle('active', s.id === id); });
+  btn.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ════════════════════════════
+   FORMULA SHEET
+════════════════════════════ */
+function renderFormulas() {
+  const grid = document.getElementById('formula-grid');
+  formulas.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'formula-card';
+    card.onclick = () => card.classList.toggle('flipped');
+    card.innerHTML = `
+      <div class="formula-front">
+        <span class="flip-hint">click to see notation ↩</span>
+        <span class="tag ${f.tc}">${f.tag}</span>
+        <div class="fname">${f.name}</div>
+        <div class="feq">${f.eq}</div>
+        <div class="fnote">${f.note}</div>
+      </div>
+      <div class="formula-back">
+        <span class="tag ${f.tc}">${f.tag}</span>
+        <div class="fname">What each symbol means</div>
+        <ul>${f.back.map(b => `<li>${b}</li>`).join('')}</ul>
+        <p class="flip-back-note">Click to flip back</p>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ════════════════════════════
+   FLASHCARDS
+════════════════════════════ */
+const decks = ["All Topics","Linear Regression","Logistic Regression","Loss Functions","Confusion Matrix & Metrics"];
+let activeDeck="All Topics", deckCards=[...allCards], cur=0, scores={got:0,total:0}, revealed=false;
+
+function renderDeckRow() {
+  const row = document.getElementById('deck-row');
+  decks.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'deck-btn' + (d===activeDeck?' active':'');
+    b.textContent = d;
+    b.onclick = () => {
+      activeDeck=d;
+      deckCards = d==="All Topics" ? [...allCards] : allCards.filter(c=>c.deck===d);
+      cur=0; scores={got:0,total:0};
+      document.getElementById('fc-score').textContent='Score: 0 / 0';
+      document.querySelectorAll('.deck-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); renderCard();
+    };
+    row.appendChild(b);
+  });
 }
 
 function renderCard() {
-  const c = cards[cur];
-  document.getElementById('fc-counter').textContent = `Card ${cur+1} of ${cards.length}`;
-  document.getElementById('card-tag').textContent = c.topic;
-  document.getElementById('card-tag').className = `tag ${c.tclass}`;
-  document.getElementById('card-tag').style.marginBottom = '1rem';
-  document.getElementById('card-q').textContent = c.q;
-  document.getElementById('card-a').textContent = c.a;
+  const c=deckCards[cur];
+  document.getElementById('fc-counter').textContent=`Card ${cur+1} of ${deckCards.length}`;
+  const tag=document.getElementById('card-tag');
+  tag.textContent=c.topic; tag.className=`tag ${c.tc}`; tag.style.marginBottom='1rem';
+  document.getElementById('card-q').textContent=c.q;
+  document.getElementById('card-a').textContent=c.a;
   document.getElementById('card-a').classList.remove('show');
-  document.getElementById('card-hint').style.display = 'block';
-  document.getElementById('fc-progress').style.width = ((cur/cards.length)*100)+'%';
-  revealed = false;
+  document.getElementById('card-hint').style.display='block';
+  document.getElementById('fc-progress').style.width=(cur/deckCards.length*100)+'%';
+  revealed=false;
 }
-
 function revealAnswer() {
-  if (!revealed) {
-    document.getElementById('card-a').classList.add('show');
-    document.getElementById('card-hint').style.display = 'none';
-    revealed = true;
-  }
+  if(!revealed){document.getElementById('card-a').classList.add('show');document.getElementById('card-hint').style.display='none';revealed=true;}
 }
-
-function nextCard() {
-  cur = (cur + 1) % cards.length;
-  renderCard();
-}
-
-function rateCard(correct) {
-  if (!revealed) { revealAnswer(); return; }
-  scores.total++;
-  if (correct) scores.got++;
-  document.getElementById('fc-score').textContent = `Score: ${scores.got} / ${scores.total}`;
+function nextCard(){cur=(cur+1)%deckCards.length;renderCard();}
+function rateCard(ok){
+  if(!revealed){revealAnswer();return;}
+  scores.total++;if(ok)scores.got++;
+  document.getElementById('fc-score').textContent=`Score: ${scores.got} / ${scores.total}`;
   nextCard();
 }
+function resetCards(){cur=0;scores={got:0,total:0};document.getElementById('fc-score').textContent='Score: 0 / 0';renderCard();}
 
-function resetCards() {
-  cur = 0; scores = {got:0, total:0};
-  document.getElementById('fc-score').textContent = 'Score: 0 / 0';
-  renderCard();
-}
-
+/* ════════════════════════════
+   PRACTICE PROBLEMS
+════════════════════════════ */
 function renderProblems() {
   const list = document.getElementById('problems-list');
-  problems.forEach((p, i) => {
-    const el = document.createElement('div');
-    el.className = 'problem-card';
-    el.innerHTML = `<div class="prob-head">
-      <div class="prob-num">${i+1}</div>
-      <div><span class="tag ${p.tclass}" style="margin-bottom:6px;">${p.tag}</span><div class="prob-q">${p.q}</div></div>
-    </div>
-    <button class="btn btn-primary" style="font-size:12px;padding:6px 14px;" onclick="toggleSol(${i})">Show solution</button>
-    <div class="solution" id="sol-${i}">${p.steps.map(s=>`<div class="step ${s.ans?'answer-step':''}"><div class="step-label">${s.label}</div><code class="step-eq">${s.eq}</code></div>`).join('')}</div>`;
+  problems.forEach((p,i) => {
+    const el=document.createElement('div');
+    el.className='problem-card';
+    el.innerHTML=`
+      <div class="prob-head">
+        <div class="prob-num">${i+1}</div>
+        <div><span class="tag ${p.tc}" style="margin-bottom:8px;">${p.tag}</span><div class="prob-q">${p.q}</div></div>
+      </div>
+      <button class="btn btn-primary" style="font-size:14px;" onclick="toggleSol(${i})">Show Solution</button>
+      <div class="solution" id="sol-${i}"><div style="height:14px;"></div>${p.steps.map(s=>`<div class="step ${s.ans?'answer-step':''}"><div class="step-label">${s.label}</div><code class="step-eq">${s.eq}</code></div>`).join('')}</div>`;
     list.appendChild(el);
   });
 }
+function toggleSol(i){const s=document.getElementById('sol-'+i),b=s.previousElementSibling,o=s.classList.toggle('show');b.textContent=o?'Hide Solution':'Show Solution';}
 
-function toggleSol(i) {
-  const sol = document.getElementById('sol-'+i);
-  const btn = sol.previousElementSibling;
-  const open = sol.classList.toggle('show');
-  btn.textContent = open ? 'Hide solution' : 'Show solution';
-}
-
+/* ════════════════════════════
+   CONCEPT DEEP-DIVES
+════════════════════════════ */
 function renderConcepts() {
   const list = document.getElementById('concepts-list');
-  concepts.forEach((c, i) => {
-    const el = document.createElement('div');
-    el.className = 'concept-card';
-    el.innerHTML = `<div class="concept-hdr" onclick="toggleConcept(${i})">
-      <div class="concept-title">${c.title}</div>
-      <span class="arrow" id="arr-${i}">▶</span>
-    </div>
-    <div class="concept-body" id="cb-${i}">${c.body}</div>`;
+  concepts.forEach((c,i) => {
+    const el=document.createElement('div');
+    el.className='concept-card';
+    el.innerHTML=`<div class="concept-hdr" onclick="toggleConcept(${i})"><div class="concept-title">${c.title}</div><span class="arrow" id="arr-${i}">▶</span></div><div class="concept-body" id="cb-${i}">${c.body}</div>`;
     list.appendChild(el);
   });
 }
+function toggleConcept(i){document.getElementById('cb-'+i).classList.toggle('show');document.getElementById('arr-'+i).classList.toggle('open');}
 
-function toggleConcept(i) {
-  document.getElementById('cb-'+i).classList.toggle('show');
-  document.getElementById('arr-'+i).classList.toggle('open');
-}
-
+/* ════════════════════════════
+   INIT
+════════════════════════════ */
+renderFormulas();
+renderDeckRow();
 renderCard();
 renderProblems();
 renderConcepts();
